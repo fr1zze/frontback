@@ -3,6 +3,7 @@ $card-bg: #f4f6f9;
 $text-color: #333;
 $border-radius: 12px;
 
+// Миксин для создания кнопок с настраиваемым цветом фона
 @mixin button($bg-color) {
     padding: 10px 16px;
     background: $bg-color;
@@ -17,6 +18,7 @@ $border-radius: 12px;
     }
 }
 
+// Блок карточки товара
 .product-card {
     width: 300px;
     margin: 50px auto;
@@ -51,6 +53,7 @@ $border-radius: 12px;
     }
 }
 
+// Класс кнопки с применением миксина
 .btn {
     @include button($primary-color);
 }
