@@ -2,10 +2,77 @@ const express = require('express')
 const { nanoid } = require('nanoid')
 const cors = require('cors')
 
+const swaggerJSDoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
+
 const app = express()
 const port = 3000
 
 console.log('THIS IS PRAC_4 BACKEND')
+
+// ===== Swagger config =====
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Sport Shop API',
+    version: '1.0.0',
+    description: 'CRUD API для товаров спортивного интернет-магазина (Практика №5)'
+  },
+  servers: [{ url: 'http://127.0.0.1:3000' }]
+}
+
+const swaggerOptions = {
+  swaggerDefinition,
+  apis: ['./app.js'] // JSDoc-описания лежат в этом файле
+}
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions)
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       required:
+ *         - name
+ *         - category
+ *         - description
+ *         - price
+ *         - stock
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID товара
+ *           example: a1b2c3
+ *         name:
+ *           type: string
+ *           description: Название товара
+ *           example: Футбольный мяч Pro Match
+ *         category:
+ *           type: string
+ *           description: Категория
+ *           example: Футбол
+ *         description:
+ *           type: string
+ *           description: Описание товара
+ *           example: Размер 5, термосклейка панелей, для тренировок и игр
+ *         price:
+ *           type: number
+ *           description: Цена товара
+ *           example: 2499
+ *         stock:
+ *           type: number
+ *           description: Количество на складе
+ *           example: 18
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Products
+ *     description: Управление товарами
+ */
 
 // ====== Данные (10 товаров) ======
 let products = [
@@ -94,16 +161,27 @@ let products = [
 // ====== Middleware ======
 app.use(express.json())
 
-app.use(cors({
-  origin: ['http://127.0.0.1:3001', 'http://localhost:3001'],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+app.use(
+  cors({
+    origin: ['http://127.0.0.1:3001', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
+
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+app.get('/__check', (req, res) => {
+  res.send('OK: swagger build is running')
+})
 
 // Логирование
 app.use((req, res, next) => {
   res.on('finish', () => {
-    console.log(`[${new Date().toISOString()}] [${req.method}] ${res.statusCode} ${req.path}`)
+    console.log(
+      `[${new Date().toISOString()}] [${req.method}] ${res.statusCode} ${req.path}`
+    )
     if (['POST', 'PATCH', 'PUT'].includes(req.method)) {
       console.log('Body:', req.body)
     }
@@ -123,7 +201,26 @@ function findProductOr404(id, res) {
 
 // ====== CRUD ======
 
-// CREATE
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     tags: [Products]
+ *     summary: Создать новый товар
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Product'
+ *     responses:
+ *       201:
+ *         description: Товар создан
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ */
 app.post('/api/products', (req, res) => {
   const { name, category, description, price, stock } = req.body
 
@@ -140,19 +237,90 @@ app.post('/api/products', (req, res) => {
   res.status(201).json(newProduct)
 })
 
-// READ ALL
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     tags: [Products]
+ *     summary: Получить список товаров
+ *     responses:
+ *       200:
+ *         description: Список товаров
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ */
 app.get('/api/products', (req, res) => {
   res.json(products)
 })
 
-// READ ONE
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     tags: [Products]
+ *     summary: Получить товар по id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Товар найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Товар не найден
+ */
 app.get('/api/products/:id', (req, res) => {
   const product = findProductOr404(req.params.id, res)
   if (!product) return
   res.json(product)
 })
 
-// UPDATE
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   patch:
+ *     tags: [Products]
+ *     summary: Частично обновить товар
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               category: { type: string }
+ *               description: { type: string }
+ *               price: { type: number }
+ *               stock: { type: number }
+ *     responses:
+ *       200:
+ *         description: Товар обновлён
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Нечего обновлять
+ *       404:
+ *         description: Товар не найден
+ */
 app.patch('/api/products/:id', (req, res) => {
   const product = findProductOr404(req.params.id, res)
   if (!product) return
@@ -171,14 +339,32 @@ app.patch('/api/products/:id', (req, res) => {
 
   if (name !== undefined) product.name = String(name).trim()
   if (category !== undefined) product.category = String(category).trim()
-  if (description !== undefined) product.description = String(description).trim()
+  if (description !== undefined)
+    product.description = String(description).trim()
   if (price !== undefined) product.price = Number(price)
   if (stock !== undefined) product.stock = Number(stock)
 
   res.json(product)
 })
 
-// DELETE
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     tags: [Products]
+ *     summary: Удалить товар
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Товар удалён
+ *       404:
+ *         description: Товар не найден
+ */
 app.delete('/api/products/:id', (req, res) => {
   const exists = products.some(p => p.id === req.params.id)
   if (!exists) {
@@ -203,4 +389,5 @@ app.use((err, req, res, next) => {
 // ====== Start ======
 app.listen(port, () => {
   console.log(`Сервер запущен на http://127.0.0.1:${port}`)
+  console.log(`Swagger: http://127.0.0.1:${port}/api-docs`)
 })
