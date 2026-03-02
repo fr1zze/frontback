@@ -6,7 +6,8 @@ const emptyProduct = {
   category: '',
   description: '',
   price: '',
-  stock: ''
+  stock: '',
+  image: ''
 }
 
 export default function ProductModal ({
@@ -26,7 +27,8 @@ export default function ProductModal ({
         category: initialProduct.category ?? '',
         description: initialProduct.description ?? '',
         price: initialProduct.price ?? '',
-        stock: initialProduct.stock ?? ''
+        stock: initialProduct.stock ?? '',
+        image: initialProduct.image ?? ''
       }
     }
     return emptyProduct
@@ -44,12 +46,24 @@ export default function ProductModal ({
     setForm(prev => ({ ...prev, [key]: e.target.value }))
   }
 
+  const isValidHttpUrl = value => {
+    const v = String(value || '').trim()
+    if (!v) return true // картинка необязательная
+    try {
+      const url = new URL(v)
+      return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+      return false
+    }
+  }
+
   const validate = () => {
     const name = String(form.name).trim()
     const category = String(form.category).trim()
     const description = String(form.description).trim()
     const price = Number(form.price)
     const stock = Number(form.stock)
+    const image = String(form.image || '').trim()
 
     if (!name) return 'Введите название'
     if (!category) return 'Введите категорию'
@@ -58,6 +72,9 @@ export default function ProductModal ({
       return 'Цена должна быть числом ≥ 0'
     if (!Number.isFinite(stock) || stock < 0)
       return 'Количество на складе должно быть числом ≥ 0'
+
+    if (!isValidHttpUrl(image))
+      return 'Ссылка на картинку должна начинаться с http:// или https://'
 
     return null
   }
@@ -75,7 +92,8 @@ export default function ProductModal ({
       category: String(form.category).trim(),
       description: String(form.description).trim(),
       price: Number(form.price),
-      stock: Number(form.stock)
+      stock: Number(form.stock),
+      image: String(form.image || '').trim() // <-- ВАЖНО: добавили image
     }
 
     onSubmit(payload)
@@ -88,7 +106,7 @@ export default function ProductModal ({
           <div className='modal__title'>
             {isEdit ? 'Редактировать товар' : 'Добавить товар'}
           </div>
-          <button className='iconBtn' onClick={onClose}>
+          <button className='iconBtn' onClick={onClose} type='button'>
             ✕
           </button>
         </div>
@@ -145,6 +163,30 @@ export default function ProductModal ({
               onChange={setField('stock')}
             />
           </label>
+
+          {/* ✅ Новое поле: URL картинки */}
+          <label className='label'>
+            Ссылка на картинку (URL)
+            <input
+              className='input'
+              placeholder='https://...'
+              value={form.image}
+              onChange={setField('image')}
+            />
+          </label>
+
+          {/* ✅ Превью (опционально, но удобно) */}
+          {String(form.image || '').trim() ? (
+            <div className='imgPreview'>
+              <img
+                src={String(form.image).trim()}
+                alt='preview'
+                onError={e => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            </div>
+          ) : null}
 
           <div className='modal__footer'>
             <button type='button' className='btn' onClick={onClose}>

@@ -16,7 +16,8 @@ const swaggerDefinition = {
   info: {
     title: 'Sport Shop API',
     version: '1.0.0',
-    description: 'CRUD API для товаров спортивного интернет-магазина (Практика №5)'
+    description:
+      'CRUD API для товаров спортивного интернет-магазина (Практика №5)'
   },
   servers: [{ url: 'http://127.0.0.1:3000' }]
 }
@@ -65,6 +66,10 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions)
  *           type: number
  *           description: Количество на складе
  *           example: 18
+ *         image:
+ *           type: string
+ *           description: URL изображения товара
+ *           example: https://images.unsplash.com/photo-1521412644187-c49fa049e84d
  */
 
 /**
@@ -78,43 +83,53 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions)
 let products = [
   {
     id: nanoid(6),
-    name: 'Футбольный мяч Pro Match',
+    name: 'Футбольный мяч',
     category: 'Футбол',
     description: 'Размер 5, термосклейка панелей, для тренировок и игр',
     price: 2499,
-    stock: 18
+    stock: 18,
+    image:
+      '/images/ball.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Бутсы Speed Runner',
+    name: 'Бутсы',
     category: 'Футбол',
     description: 'Лёгкие бутсы для искусственного газона, хорошее сцепление',
     price: 5999,
-    stock: 9
+    stock: 9,
+    image:
+      '/images/buts.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Бинты боксерские 3 м',
+    name: 'Бинты боксерские',
     category: 'Единоборства',
     description: 'Хлопок, фиксируют кисть и запястье, 2 шт в комплекте',
     price: 499,
-    stock: 45
+    stock: 45,
+    image:
+      '/images/binti.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Перчатки боксерские 12 oz',
+    name: 'Перчатки боксерские',
     category: 'Единоборства',
     description: 'Подойдут для спаррингов, плотная набивка, фиксация липучкой',
     price: 3999,
-    stock: 14
+    stock: 14,
+    image:
+      '/images/perchatki.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Коврик для йоги 6 мм',
+    name: 'Коврик для йоги',
     category: 'Йога',
     description: 'Нескользящий, 183×61 см, комфортная толщина для суставов',
     price: 1299,
-    stock: 30
+    stock: 30,
+    image:
+      '/images/kovrik.jpg'
   },
   {
     id: nanoid(6),
@@ -122,23 +137,29 @@ let products = [
     category: 'Фитнес',
     description: '5 уровней сопротивления, для тренировок дома и в зале',
     price: 799,
-    stock: 60
+    stock: 60,
+    image:
+      '/images/rezinki.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Гантели разборные 20 кг',
+    name: 'Гантели разборные',
     category: 'Силовые тренировки',
     description: 'Набор блинов + гриф, регулировка веса под упражнения',
     price: 7499,
-    stock: 7
+    stock: 7,
+    image:
+      '/images/ganteli.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Скакалка скоростная',
+    name: 'Скакалка',
     category: 'Кардио',
     description: 'Подшипники, регулируемая длина, для интенсивных тренировок',
     price: 699,
-    stock: 35
+    stock: 35,
+    image:
+      '/images/skak.jpg'
   },
   {
     id: nanoid(6),
@@ -146,15 +167,19 @@ let products = [
     category: 'Аксессуары',
     description: 'Без BPA, удобный клапан, подходит для велосипеда и зала',
     price: 599,
-    stock: 80
+    stock: 80,
+    image:
+      '/images/bottle.jpg'
   },
   {
     id: nanoid(6),
-    name: 'Ракетка для тенниса Start',
+    name: 'Ракетка для тенниса',
     category: 'Теннис',
     description: 'Для начинающих, лёгкая, чехол в комплекте',
     price: 4999,
-    stock: 11
+    stock: 11,
+    image:
+      '/images/raketka.jpg'
   }
 ]
 
@@ -180,7 +205,9 @@ app.get('/__check', (req, res) => {
 app.use((req, res, next) => {
   res.on('finish', () => {
     console.log(
-      `[${new Date().toISOString()}] [${req.method}] ${res.statusCode} ${req.path}`
+      `[${new Date().toISOString()}] [${req.method}] ${res.statusCode} ${
+        req.path
+      }`
     )
     if (['POST', 'PATCH', 'PUT'].includes(req.method)) {
       console.log('Body:', req.body)
@@ -190,7 +217,7 @@ app.use((req, res, next) => {
 })
 
 // ====== Helper ======
-function findProductOr404(id, res) {
+function findProductOr404 (id, res) {
   const product = products.find(p => p.id == id)
   if (!product) {
     res.status(404).json({ error: 'Product not found' })
@@ -222,7 +249,7 @@ function findProductOr404(id, res) {
  *               $ref: '#/components/schemas/Product'
  */
 app.post('/api/products', (req, res) => {
-  const { name, category, description, price, stock } = req.body
+  const { name, category, description, price, stock, image } = req.body
 
   const newProduct = {
     id: nanoid(6),
@@ -230,7 +257,8 @@ app.post('/api/products', (req, res) => {
     category: String(category).trim(),
     description: String(description).trim(),
     price: Number(price),
-    stock: Number(stock)
+    stock: Number(stock),
+    image: String(image || '').trim()
   }
 
   products.push(newProduct)
@@ -309,6 +337,7 @@ app.get('/api/products/:id', (req, res) => {
  *               description: { type: string }
  *               price: { type: number }
  *               stock: { type: number }
+ *               image: { type: string }
  *     responses:
  *       200:
  *         description: Товар обновлён
@@ -325,14 +354,15 @@ app.patch('/api/products/:id', (req, res) => {
   const product = findProductOr404(req.params.id, res)
   if (!product) return
 
-  const { name, category, description, price, stock } = req.body
+  const { name, category, description, price, stock, image } = req.body
 
   if (
     name === undefined &&
     category === undefined &&
     description === undefined &&
     price === undefined &&
-    stock === undefined
+    stock === undefined &&
+    image === undefined
   ) {
     return res.status(400).json({ error: 'Nothing to update' })
   }
@@ -343,6 +373,7 @@ app.patch('/api/products/:id', (req, res) => {
     product.description = String(description).trim()
   if (price !== undefined) product.price = Number(price)
   if (stock !== undefined) product.stock = Number(stock)
+  if (image !== undefined) product.image = String(image).trim()
 
   res.json(product)
 })
