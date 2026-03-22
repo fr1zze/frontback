@@ -181,3 +181,24 @@ form {
   color: inherit;
   outline: none;
 } /*# sourceMappingURL=UsersPage.css.map */
+
+.header__right--actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navBtn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  opacity: 0.95;
+}

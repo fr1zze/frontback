@@ -1,13 +1,11 @@
 import React from 'react'
 
-export default function ProductCard ({ product, onEdit, onDelete }) {
+export default function ProductCard ({ product, onEdit, onDelete, canEdit, canDelete }) {
   return (
     <div className='card'>
       <div className='card__image'>
         <img
-          src={
-            product.image || 'https://via.placeholder.com/600x400?text=No+Image'
-          }
+          src={product.image || 'https://via.placeholder.com/600x400?text=No+Image'}
           alt={product.name}
           loading='lazy'
         />
@@ -20,17 +18,20 @@ export default function ProductCard ({ product, onEdit, onDelete }) {
           <div className='card__meta'>{product.category}</div>
         </div>
 
-        <div className='card__actions'>
-          <button className='btn btn--ghost' onClick={() => onEdit(product)}>
-            Редактировать
-          </button>
-          <button
-            className='btn btn--danger'
-            onClick={() => onDelete(product.id)}
-          >
-            Удалить
-          </button>
-        </div>
+        {(canEdit || canDelete) && (
+          <div className='card__actions'>
+            {canEdit && (
+              <button className='btn btn--ghost' onClick={() => onEdit(product)}>
+                Редактировать
+              </button>
+            )}
+            {canDelete && (
+              <button className='btn btn--danger' onClick={() => onDelete(product.id)}>
+                Удалить
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className='card__desc'>{product.description}</div>
